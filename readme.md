@@ -1,22 +1,14 @@
 ## 고차함수 (High Order Function) =? HOC (High Order Component)
 
----
-
 ###1. 고차함수란
-자바스크립트에서 함수는 데이터 (일급객체)
-자바스크립트의 데이터 형은
-- Number 
-- String 
-- Boolean 
-- Object 
-- null 
-- undefined
-- ...
 
-이 있는데 
+: 인자로 다른 함수를 전달받는 함수
+
+---
 
 ### 함수도 데이터다. 
 
+자바스크립트에서 함수는 데이터 (일급객체)   
 **일급객체: 데이터의 저장 반환 전달이 가능
 
 함수 저장
