@@ -43,11 +43,19 @@ const sortBy = property => {
     }
 }
 
+const tap = value =>
+    fn => (
+        typeof(fn) === "function" && fn(value),
+            console.log(value)
+    )
+
+
 export {
     forEach,
     forEachObject,
     unless,
     times,
     every,
-    sortBy
+    sortBy,
+    tap
 }

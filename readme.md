@@ -1,105 +1,80 @@
-## 고차함수 (High Order Function) =? HOC (High Order Component)
+## 클로저와 고차함수
 
-###1. 고차함수란
+### 클로저란
 
-: 인자로 다른 함수를 전달받는 함수
-
----
-
-### 함수도 데이터다. 
-
-자바스크립트에서 함수는 데이터 (일급객체)   
-**일급객체: 데이터의 저장 반환 전달이 가능
-
-함수 저장
-``` js
-let fn = () => {} // 변수에 함수 저장
-typeof fn // "function"
-fn() // 함수 동작
-```
-
-### 함수는 전달이 가능하다.
-
-전달 예시
+클로저는 내부함수다.
 ```js
-let tellType = (arg) => {
-    console.log(typeof arg)
-}
-
-let dataFn = () => {
-    console.log("I'm a function")
-}
-
-tellType(dataFn) // function
-```
-
-전달한 함수 실행 가능
-```js 
-let tellType = (arg) => {
-    if (typeof arg === 'function') {
-        arg()
-    } else {
-        console.log('The passed data is ' + arg)
+function outer() {
+    function inner() {
+        
     }
 }
-
-tellType(dataFn) // I'm a function
-``` 
-
-### 함수는 반환(return)이 가능하다
-반환 가능
-```js
-let dataFn = (arg) => {
-    console.log(arg)
-}
-
-// Fn => dataFn
-let returnFn = () => dataFn
-
-returnFn()("I'm a function")
 ```
----
-### 추상화
+클로저는 스코프체인에 접근할 수 있다.
 
-고차함수를 통한 추상화
+클로저의 스코프
+1. 자체 선언 내에서 선언된 변수
+2. 전역 변수에 접근
+3. 외부 함수의 변수에 접근
 
 ```js
-// 객체 반복을 추상화
-const forEachObject = (obj, fn) => {
-    for (let property in obj) {
-        if (obj.hasOwnProperty(property)) {
-            // 인자로 key, value를 이용해서 fn을 호출
-            fn(property ,obj[property])
-        }
+let scope2 = 'scope2'
+function outer() {
+    let scope3 = 'outer'
+    function inner() {
+        let scope1 = 5;
+        
+        console.log(scope1);
+        console.log(scope2);
+        console.log(scope3);
     }
-}
-
-const unless = (predicate, fn) => {
-    if (!predicate)
-        fn()
-}
-
-const times = (times, fn) => {
-    for (let i = 0; i < times; i++) {
-        fn(i)
-    }
-}
-
-const every = (arr, fn) => {
-    let result = true;
-    for (const value of arr) {
-        result = result && fn(value)
-    }
-    return result
-}
-
-// 고차함수 클로저 사용으로
-// sort에서 해당 property값을 기억
-const sortBy = property => {
-    return (a, b) => {
-        const result = (a[property] < b[property]) ? -1 :
-            (a[property] > b[property]) ? 1 : 0;
-        return result
-    }
+    inner()
 }
 ```
+스코프 3의 경우 외부함수의 변수에 접근..  
+
+또한 외부함수의 파라미터에도 접근할 수 있다.
+```js
+const fn = arg => {
+    let outer = 'Visible'
+    let innerFn = () => {
+        console.log(outer)
+        console.log(arg)
+    }
+    return innerFn
+}
+
+const closureFn = fn(5)
+closureFn() // Visible  5
+```
+진행과정 :
+
+```js
+const closureFn = fn(5)
+```
+1. 호출시 fn은 인자 5를 받고 호출, fn 정의가 이뤄지면 innerFn을 반환
+2. innerFn이 반환되면서 js실행엔진은 innerFn을 클로저로 봄
+3. 스코프를 지정함 (클로저의 스코프)
+4. 반환된 함수 참조는 closureFn 내에 저장
+5. closureFn이 스코프체인을 통해 호출되면 arg, outer 값을 가짐
+```js
+closureFn()
+```
+6. 호출, closureFn이 생성되면 스코프/문맥을 기억한다.  
+
+클로저는 **스코프를 기억한다 문맥을 기억한다**
+
+### 유용한 고차함수
+
+tap
+```js
+const tap = value => 
+    fn => (
+        typeof(fn) === "function" && fn(value),
+            console.log(value)
+    )
+```
+참고 : (exp1, exp2)는 두 인자를 실행해서 두 번째 표현식인 exp2를 반환함을 의미한다.  
+tab함수는 value를 닫고 value상 클로저를 갖는 함수를 반환하며 실행한다.
+
+
