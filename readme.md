@@ -77,4 +77,105 @@ const tap = value =>
 참고 : (exp1, exp2)는 두 인자를 실행해서 두 번째 표현식인 exp2를 반환함을 의미한다.  
 tab함수는 value를 닫고 value상 클로저를 갖는 함수를 반환하며 실행한다.
 
+---
+unary   
+하나의 연산에 대해서만 처리하게 하는 함수
+
+```js
+['1', '2', '3'].map(parseInt)
+// [1, NaN, NaN]
+```
+예상하지 않은 결과가 나옴   
+parseInt(string: string, radix?: number)  
+map이 호출하는 element, index, arr   
+parseInt함수를 호출할 때 string에 element가 전달되고
+radix에 index가 전달되어 예상하지 않은 결과가 나오는 것
+
+이럴 때 하나의 인자만 필요하므로 unary 함수를
+
+```js
+const unary = (fn) => 
+    fn.length === 1
+        ? fn
+        : (arg) => fn(arg)
+
+['1', '2', '3'].map(unary(parseInt))
+// [1, 2, 3]
+```
+
+---
+
+once  
+함수를 한 번만 실행해야 하는 경우
+```js
+const once = (fn) => {
+    let done = false;
+    
+    return function () {
+        return done ? undefined : ((done = true), fn.apply(this, arguments))
+    }
+}
+
+const doPayment = once(() => { console.log('payment is done') })
+
+doPayment()
+// payment is done
+
+doPayment()
+// undefined
+```
+
+memoize
+```js
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -49,6 +49,18 @@ const tap = value =>
             console.log(value)
     )
 
+const unary = fn =>
+    fn.length === 1
+        ? fn
+        : arg => fn(arg)
+
+const once = (fn) => {
+    let done = false;
+
+    return function () {
+        return done ? undefined : ((done = true), fn.apply(this, arguments))
+    }
+}
 
 export {
     forEach,
@@ -57,5 +69,8 @@ export {
     times,
     every,
     sortBy,
-    tap
+    tap,
+    unary,
+    once,
+
 }
