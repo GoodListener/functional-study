@@ -9,6 +9,7 @@
 4. 클로저와 고차함수
    [chap04](https://github.com/GoodListener/functional-study/tree/chap04)
 5. 배열로 함수형 다루기
+   [chap05](https://github.com/GoodListener/functional-study/tree/chap05)
 6. 커링
 7. 컴포지션과 파이프라인
 8. 함수자
