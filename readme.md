@@ -127,55 +127,11 @@ doPayment()
 
 memoize
 ```js
+const memoize = (fn) => {
+    const lookupTable = {}
 
+    return arg => lookupTable[arg] || (lookupTable[arg] = fn(arg))
+}
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+---
+고차함수를 이용하여 일반적인 문제를 특정 함수로 추상화하고 이를 재사용함

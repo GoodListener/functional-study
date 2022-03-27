@@ -62,6 +62,12 @@ const once = (fn) => {
     }
 }
 
+const memoize = (fn) => {
+    const lookupTable = {}
+
+    return arg => lookupTable[arg] || (lookupTable[arg] = fn(arg))
+}
+
 export {
     forEach,
     forEachObject,
@@ -72,5 +78,5 @@ export {
     tap,
     unary,
     once,
-
+    memoize
 }
