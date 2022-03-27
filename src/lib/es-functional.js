@@ -1,82 +1,34 @@
-
 const forEach = (array, fn) => {
-    for (let i = 0; i < array.length; i++) {
-        fn(array[i])
+    for (const value of array) {
+        fn(value)
     }
 }
 
-const forEachObject = (obj, fn) => {
-    for (let property in obj) {
-        if (obj.hasOwnProperty(property)) {
-            // 인자로 key, value를 이용해서 fn을 호출
-            fn(property ,obj[property])
-        }
-    }
+const map = (array, fn) => {
+    let results = []
+    for (const value of array)
+        results.push(fn(value))
+    return results
 }
 
-const unless = (predicate, fn) => {
-    if (!predicate)
-        fn()
+const filter = (array, fn) => {
+    let results = []
+    for (const value of array)
+        fn(value) ? results.push(value) : undefined
+    return results
 }
 
-const times = (times, fn) => {
-    for (let i = 0; i < times; i++) {
-        fn(i)
-    }
-}
+const concatAll = (array, fn) => {
+    let results = []
+    for (const value of array)
+        results.push.apply(results, value)
 
-const every = (arr, fn) => {
-    let result = true;
-    for (const value of arr) {
-        result = result && fn(value)
-    }
-    return result
-}
-
-// 고차함수 클로저 사용으로
-// sort에서 해당 property값을 기억
-const sortBy = property => {
-    return (a, b) => {
-        const result = (a[property] < b[property]) ? -1 :
-            (a[property] > b[property]) ? 1 : 0;
-        return result
-    }
-}
-
-const tap = value =>
-    fn => (
-        typeof(fn) === "function" && fn(value),
-            console.log(value)
-    )
-
-const unary = fn =>
-    fn.length === 1
-        ? fn
-        : arg => fn(arg)
-
-const once = (fn) => {
-    let done = false;
-
-    return function () {
-        return done ? undefined : ((done = true), fn.apply(this, arguments))
-    }
-}
-
-const memoize = (fn) => {
-    const lookupTable = {}
-
-    return arg => lookupTable[arg] || (lookupTable[arg] = fn(arg))
+    return results
 }
 
 export {
     forEach,
-    forEachObject,
-    unless,
-    times,
-    every,
-    sortBy,
-    tap,
-    unary,
-    once,
-    memoize
+    map,
+    filter,
+    concatAll
 }

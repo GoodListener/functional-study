@@ -1,43 +1,14 @@
-import {forEach, tap, once, unary, memoize} from '../lib/es-functional.js'
+import {map, filter, concatAll} from '../lib/es-functional.js'
+import { apressBooks } from '../data/apressBooks'
 
-tap('fun')(it => console.log('value is ' + it))
+const goodRatingCriteria = (book) => book.rating[0] > 4.5;
 
-forEach([1,2,3], value =>
-    tap(value)(() => {
-        console.log(value)
-    })
-)
+const goodRatingBooks = filter(
+    concatAll(
+        map(apressBooks, (book) => {
+            return book.bookDetails
+        })
+    )
+, goodRatingCriteria)
 
-const doPayment = once(() => {
-    return 'true'
-})
-
-console.log(doPayment())
-
-console.log(doPayment())
-
-function test (a,[b,c]) {
-    console.log(a,b,c)
-}
-
-console.log(test.length)
-
-const factorial = n => {
-    if (n === 0) {
-        return 1;
-    }
-
-    return n * factorial(n - 1)
-}
-
-const fastFactorial = memoize(n => {
-    if (n === 0) {
-        return 1;
-    }
-
-    return n * fastFactorial(n - 1)
-})
-
-console.log(new Date().getTime())
-console.log(fastFactorial(2500))
-console.log(new Date().getTime())
+console.log(goodRatingBooks)
