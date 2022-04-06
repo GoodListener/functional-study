@@ -10,7 +10,8 @@
    [chap04](https://github.com/GoodListener/functional-study/tree/chap04)
 5. 배열로 함수형 다루기
    [chap05](https://github.com/GoodListener/functional-study/tree/chap05)
-6. 커링
+6. 커링 (진행중)
+   [chap06](https://github.com/GoodListener/functional-study/tree/chap06)
 7. 컴포지션과 파이프라인
 8. 함수자
 9. 모나드
