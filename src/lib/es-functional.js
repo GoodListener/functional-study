@@ -11,7 +11,7 @@ const map = (array, fn) => {
     return results
 }
 
-const filter = (array, fn) => {
+const filter = (fn, array) => {
     let results = []
     for (const value of array)
         fn(value) ? results.push(value) : undefined
@@ -54,11 +54,41 @@ const zip = (leftArr, rightArr, fn) => {
     return results;
 }
 
+const binaryCurry = fn => a => b => fn(a, b)
+
+// const curry = fn => {
+//     const recur = (...args) => args.length < fn.length ? () => recur(args.concat([].slice.call(arguments))) : fn(...args)
+//     return recur
+// }
+
+const curry = fn => {
+    if (typeof fn !== 'function') {
+        throw Error('No function provided')
+    }
+
+    return function curriedFn(...args) {
+        if (args.length < fn.length) {
+            return function() {
+                return curriedFn.apply(null, args.concat([].slice.call(arguments)))
+            }
+        }
+        return fn.apply(null, args);
+    }
+}
+
+// 실행 순서
+// const add = a,b,c => a + b + c
+// curry(add)
+// addCurried(1)(2)(3)
+// 1 일 때
+
 export {
     forEach,
     map,
     filter,
     concatAll,
     reduce,
-    zip
+    zip,
+    binaryCurry,
+    curry,
 }

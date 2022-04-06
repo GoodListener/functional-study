@@ -1,14 +1,22 @@
-import {map, filter, concatAll} from '../lib/es-functional.js'
-import { apressBooks } from '../data/apressBooks'
+import {curry, filter} from "../lib/es-functional";
 
-const goodRatingCriteria = (book) => book.rating[0] > 4.5;
+const add = (x,y,z) => x + y + z
 
-const goodRatingBooks = filter(
-    concatAll(
-        map(apressBooks, (book) => {
-            return book.bookDetails
-        })
-    )
-, goodRatingCriteria)
+const addCurried = curry(add)
 
-console.log(goodRatingBooks)
+const multiple = (a,b,c) => a * b * c
+
+const multipleCurried = curry(multiple)
+
+const curriedMul1 = multipleCurried(1)
+
+console.log(curriedMul1(2)(3))
+
+const curriedFilter = curry(filter)
+
+const isThree = curriedFilter(a => a === 3)
+
+const result = isThree([1,2,3])
+
+console.log(result)
+console.log(isThree([1,2,3,4,3,5,2,3]))

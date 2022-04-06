@@ -1,84 +1,68 @@
-## 배열로 함수형 다루기
+## 커링과 부분 적용
 
-배열을 다루는 함수를 직접 만들어봄
-1. map
-2. filter
-3. concatAll == flat?
-4. reduce
-5. zip
+용어 정리   
+
+1. 단항함수   
+인자 하나만 갖는 함수
+2. 이항함수   
+인자를 두개 갖는 함수
+3. 가변인자함수   
+다양한 개수의 인자를 갖는 함수
 
 
-
-#### map   
+#### 커링
 ```js
-const map = (array, fn) => {
-    let results = []
-    for (const value of array)
-        results.push(fn(value))
-    return results
-}
+const add = (x,y) => x + y;
+const addCurried = x => y => x + y; // currying function
 
-const filter = (array, fn) => {
-    let results = []
-    for (const value of array)
-        fn(value) ? results.push(value) : undefined
-    return results
-}
+console.log(addCurried(2)(3)) // 6
 
-const concatAll = (array, fn) => {
-    let results = []
-    for (const value of array)
-        results.push.apply(results, value)
+const binaryCurry = fn => a => b => fn(a, b)
+// 이항함수를 중첩된 단항함수로 변경시키는 함수
 
-    return results
-}
+const addCurried2 = binaryCurry(add)
 
-const reduce = (array, fn, initialValue) => {
-    let accumulator;
+console.log(addCurried2(2)(3)) // 6
+```
 
-    if (initialValue !== undefined)
-        accumulator = initialValue
-    else
-        accumulator = array[0]
+#### 다항함수를 다루기 위한 커링
+```js
+const curry = fn => {
+    if (typeof fn !== 'function') {
+        throw Error('No function provided')
+    }
 
-    if (initialValue === undefined)
-        for (let i = 1; i < array.length; i++) {
-            accumulator = fn(accumulator, array[i])
+    return function curriedFn(...args) {
+        if (args.length < fn.length) {
+            return function() {
+                return curriedFn.apply(null, args.concat([].slice.call(arguments)))
+            }
         }
-    else
-        for (const value of array)
-            accumulator = fn(accumulator, value)
-
-    return [accumulator]
+        return fn.apply(null, args);
+    }
 }
 
-const zip = (leftArr, rightArr, fn) => {
-    let index, results = [];
+// 참고: apply는 함수를 call하면서 인자들을 단일 배열로 변환시켜 실행한다.
 
-    for (index = 0; index < Math.min(leftArr.length, rightArr.length); index++)
-        results.push(fn(leftArr[index], rightArr[index]))
+// 좀 더 보기쉽게 가능할까..?
 
-    return results;
+const add = (x,y,z) => x + y + z
+const curriedAdd = curry(add)
+
+curriedAdd(1)(2)(3)
+
+const filter = (fn, array) => {
+    const result = []
+    for (const value of array) {
+        fn(value) ? result.push(arr) : undefined
+    }
+    return result;
 }
+
+const curriedFilter = curry(filter)
+
+const isThree = curriedFilter(a => a === 3)
+
+console.log(isThree([1,2,3,4,3,5,2,3]))
+// [3,3,3]
 ```
-
-함수들을 이용하여 배열 정보 처리
-
-```js
-import { apressBooks } from '../data/apressBooks'
-
-const goodRatingCriteria = (book) => book.rating[0] > 4.5;
-
-const goodRatingBooks = filter(
-    concatAll(
-        map(apressBooks, (book) => {
-            return book.bookDetails
-        })
-    )
-, goodRatingCriteria)
-
-console.log(goodRatingBooks)
-```
-
-함수형으로 자바스크립트 작성하는 라이브러리 참고
-RxJS
