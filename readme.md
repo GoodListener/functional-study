@@ -1,4 +1,4 @@
-## 커링과 부분 적용
+## 커링과 부분 적용(파셜)
 
 용어 정리   
 
@@ -65,4 +65,82 @@ const isThree = curriedFilter(a => a === 3)
 
 console.log(isThree([1,2,3,4,3,5,2,3]))
 // [3,3,3]
+```
+
+#### 커리의 실 사용 (함수 합성)
+```js
+// 1. 배열에서 숫자 검색
+
+// match 함수
+let match = curry((expr, str) => str.match(expr))
+let hasNumber = match(/[0-9]+/)
+
+let curriedFilter = curry(filter)
+
+const findNumberInArray = curriedFilter(hasNumber)
+
+const foundNumberString = findNumberInArray(['js', 'number1'])
+
+console.log(foundNumberString)
+```
+
+#### 커리의 실 사용 (함수 합성)
+```js
+// 1. 배열에서 숫자 검색
+
+// match 함수
+let match = curry((expr, str) => str.match(expr))
+let hasNumber = match(/[0-9]+/)
+
+let curriedFilter = curry(filter)
+
+const findNumberInArray = curriedFilter(hasNumber)
+
+const foundNumberString = findNumberInArray(['js', 'number1'])
+
+console.log(foundNumberString) // ['number1']
+
+// 2. 배열 제곱
+// 기존 풀이방식
+console.log(map(x => x * x, [1,2,3,4,5]))
+
+const curriedMap = curry(map)
+const squareAll = curriedMap(x => x * x)
+console.log(squareAll([1,2,3,4,5])) // [1,4,9,16,25]
+```
+
+#### 데이터 플로우.. (partial 로 들어가기)
+```js
+setTimeout(() => console.log('do task 1'), 10)
+setTimeout(() => console.log('do task 2'), 10)
+
+const curriedTimeout = curry(setTimeout)
+// setTimeout을 curry로 감싸도 제대로 동작하지 않음
+
+curriedTimeout(() => {console.log('do task 1')})(10) // not work
+// 커리 함수는 가장 왼쪽에서 오른쪽의 리스트로 인자를 적용한다.
+
+const setTimeoutWrapper = (time, fn) => {
+    setTimeout(fn, time)
+}
+
+const curriedTimeout = curry(setTimeoutWrapper)(10)
+// setTimeout을 wrapper함수로 감싸서 함수의 오른쪽이 우선이 되도록 하고
+// curry로 감싸면 해결됨
+
+curriedTimeout(() => console.log('do task 1')) // do task 1
+```
+
+#### 부분 함수 사용 (partial)
+```js
+const partial = (fn, ...args) => (...fullArguments) => {
+    let count = 0;
+    for (let i = 0; i < args.length && count < fullArguments.length; i++)
+        if (args[i] === undefined)
+            args[i] = fullArguments[count++];
+    return fn.apply(null, args)
+}
+
+const delayedTenMs = partial(setTimeout, undefined, 10)
+delayedTenMs(() => console.log('do task 1')) // do task 1
 ```

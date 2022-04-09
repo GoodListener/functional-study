@@ -4,7 +4,7 @@ const forEach = (array, fn) => {
     }
 }
 
-const map = (array, fn) => {
+const map = (fn, array) => {
     let results = []
     for (const value of array)
         results.push(fn(value))
@@ -82,6 +82,14 @@ const curry = fn => {
 // addCurried(1)(2)(3)
 // 1 일 때
 
+const partial = (fn, ...args) => (...fullArguments) => {
+    let count = 0;
+    for (let i = 0; i < args.length && count < fullArguments.length; i++)
+        if (args[i] === undefined)
+            args[i] = fullArguments[count++];
+    return fn.apply(null, args)
+}
+
 export {
     forEach,
     map,
@@ -91,4 +99,5 @@ export {
     zip,
     binaryCurry,
     curry,
+    partial
 }
