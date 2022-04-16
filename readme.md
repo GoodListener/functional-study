@@ -133,7 +133,8 @@ curriedTimeout(() => console.log('do task 1')) // do task 1
 
 #### 부분 함수 사용 (partial)
 ```js
-const partial = (fn, ...args) => (...fullArguments) => {
+const partial = (fn, ...partialArgs) => (...fullArguments) => {
+    let args = partialArgs.slice(0); // 수정된 부분.
     let count = 0;
     for (let i = 0; i < args.length && count < fullArguments.length; i++)
         if (args[i] === undefined)
@@ -143,4 +144,11 @@ const partial = (fn, ...args) => (...fullArguments) => {
 
 const delayedTenMs = partial(setTimeout, undefined, 10)
 delayedTenMs(() => console.log('do task 1')) // do task 1
+
+// But, 버그가 있음
+delayedTenMs(() => console.log('do task 2')) // do task 1 ??? 2가 아닌 1이 출력
+// undefined 를 인자로 변환시키면서 partial 의 args가 변경됨..
+
+// partial 내부의 partialArgs를 복제해서 args를 다시 만들어줌.
+// 직접 array를 변경하지 못하도록 수정.
 ```

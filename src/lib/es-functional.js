@@ -82,11 +82,14 @@ const curry = fn => {
 // addCurried(1)(2)(3)
 // 1 일 때
 
-const partial = (fn, ...args) => (...fullArguments) => {
+const partial = (fn, ...partialArgs) => (...fullArguments) => {
+    let args = partialArgs.slice(0); // 수정된 부분.
     let count = 0;
-    for (let i = 0; i < args.length && count < fullArguments.length; i++)
-        if (args[i] === undefined)
+    for (let i = 0; i < args.length && count < fullArguments.length; i++) {
+        if (args[i] === undefined) {
             args[i] = fullArguments[count++];
+        }
+    }
     return fn.apply(null, args)
 }
 

@@ -51,6 +51,9 @@ const setTimeoutWrapper = (time, fn) => {
 const curriedTimeout = curry(setTimeoutWrapper)(10)
 
 curriedTimeout(() => console.log('do task 1')) // do task 1
+curriedTimeout(() => console.log('do task 2')) // do task 2
 
 const delayedTenMs = partial(setTimeout, undefined, 10)
 delayedTenMs(() => console.log('do task 1')) // do task 1
+
+delayedTenMs(() => console.log('do task 2')) // do task 2 ???? why 1?
