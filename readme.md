@@ -13,6 +13,7 @@
 6. 커링 (진행중)
    [chap06](https://github.com/GoodListener/functional-study/tree/chap06)
 7. 컴포지션과 파이프라인
+   [chap07](https://github.com/GoodListener/functional-study/tree/chap07)
 8. 함수자
 9. 모나드
 10. 제네레이터 문법
