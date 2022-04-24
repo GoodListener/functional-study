@@ -15,6 +15,7 @@
 7. 컴포지션과 파이프라인
    [chap07](https://github.com/GoodListener/functional-study/tree/chap07)
 8. 함수자
+   [chap08](https://github.com/GoodListener/functional-study/tree/chap08)
 9. 모나드
 10. 제네레이터 문법
 11. 반응형 라이브러리 빌드
