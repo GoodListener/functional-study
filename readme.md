@@ -1,154 +1,104 @@
-## 커링과 부분 적용(파셜)
+## 컴포지션과 파이프라인
 
-용어 정리   
+#### 컴포지션
 
-1. 단항함수   
-인자 하나만 갖는 함수
-2. 이항함수   
-인자를 두개 갖는 함수
-3. 가변인자함수   
-다양한 개수의 인자를 갖는 함수
+유닉스 철학 중   
+1. 각 프로그램이 한 가지 작업을 잘하게 하라. 새로운 작업을 하려면 새로운 기능을 추가해 오래된 프로그램을 복잡하게 하지 말고 새로 만들어라
+2. 모든 프로그램의 출력이 아직 알려지지 않은 다른 프로그램의 입력이 될 것으로 예상한다.
+----
+   
 
-
-#### 커링
+#### 작은 단위의 함수를 연결하는 compose 함수
 ```js
-const add = (x,y) => x + y;
-const addCurried = x => y => x + y; // currying function
+const compose = (a, b) => (c) => a(b(c))
 
-console.log(addCurried(2)(3)) // 6
+// 문자열 parse float 후 반올림하기
+let data = parseFloat("3.56")
+let number = Math.round(data)
 
-const binaryCurry = fn => a => b => fn(a, b)
-// 이항함수를 중첩된 단항함수로 변경시키는 함수
+// compose로 함수 결합
+let number = compose(Math.round, parseFloat) // parseFloat의 결과를 Math.round에 넣는다.
+// 순서가 역순
 
-const addCurried2 = binaryCurry(add)
-
-console.log(addCurried2(2)(3)) // 6
+number("3.56") // 4
 ```
 
-#### 다항함수를 다루기 위한 커링
+#### 여러 인자를 갖는 함수의 결합은 curry와 partial
 ```js
-const curry = fn => {
-    if (typeof fn !== 'function') {
-        throw Error('No function provided')
-    }
+let filterGoodBooks = book => book.rating[0] > 4.5;
 
-    return function curriedFn(...args) {
-        if (args.length < fn.length) {
-            return function() {
-                return curriedFn.apply(null, args.concat([].slice.call(arguments)))
-            }
-        }
-        return fn.apply(null, args);
-    }
-}
+let projectTitleAndAuthor = book => ({ title: book.title, author: book.author })
 
-// 참고: apply는 함수를 call하면서 인자들을 단일 배열로 변환시켜 실행한다.
+let queryGoodBooks = partial(filter, undefined, filterGoodBooks)
+let mapTitleAndAuthor = partial(map, undefined, projectTitleAndAuthor)
+let titleAndAuthorForGoodBooks = compose(mapTitleAndAuthor, queryGoodBooks)
 
-// 좀 더 보기쉽게 가능할까..?
-
-const add = (x,y,z) => x + y + z
-const curriedAdd = curry(add)
-
-curriedAdd(1)(2)(3)
-
-const filter = (fn, array) => {
-    const result = []
-    for (const value of array) {
-        fn(value) ? result.push(arr) : undefined
-    }
-    return result;
-}
-
-const curriedFilter = curry(filter)
-
-const isThree = curriedFilter(a => a === 3)
-
-console.log(isThree([1,2,3,4,3,5,2,3]))
-// [3,3,3]
+const booksDetails = concatAll(
+    map(apressBooks, (book) => {
+      return book.bookDetails
+    })
+)
+console.log(titleAndAuthorForGoodBooks(booksDetails))
 ```
 
-#### 커리의 실 사용 (함수 합성)
+#### 여러 함수의 결합
 ```js
-// 1. 배열에서 숫자 검색
+const composeN = (...fns) => 
+  value => 
+    reduce(fns.reverse(), (acc, fn) => fn(acc), value)
 
-// match 함수
-let match = curry((expr, str) => str.match(expr))
-let hasNumber = match(/[0-9]+/)
+let splitIntoSpaces = str => str.split(' ');
+let count = array => array.length;
+const countWords = compose(count, splitIntoSpaces)
 
-let curriedFilter = curry(filter)
+console.log(countWords('aa bb cc dd')) // 4
 
-const findNumberInArray = curriedFilter(hasNumber)
+let oddOrEven = ip => ip % 2 ? 'even' : 'odd'
 
-const foundNumberString = findNumberInArray(['js', 'number1'])
+const oddOrEvenWords = composeN(oddOrEven, count, splitIntoSpaces)
 
-console.log(foundNumberString)
+console.log(oddOrEvenWords('aa bb cc dd ee')); // ['even']
 ```
 
-#### 커리의 실 사용 (함수 합성)
+#### 파이프라인, 시퀀스
 ```js
-// 1. 배열에서 숫자 검색
+const pipe = (...fns) =>
+  value => 
+    reduce(fns, (acc, fn) => fn(acc), value)
+// reverse없는 composeN
 
-// match 함수
-let match = curry((expr, str) => str.match(expr))
-let hasNumber = match(/[0-9]+/)
+const oddOrEvenWords22 = pipe(splitIntoSpaces, count, oddOrEven)
 
-let curriedFilter = curry(filter)
+console.log(oddOrEvenWords22('aa bb cc dd ee'))
+```
+pipe함수는 compose에서 reverse만 뺀 것과 동일   
 
-const findNumberInArray = curriedFilter(hasNumber)
+#### 컴포지션의 특징
+- 결합법칙이 성립
+```text
+수학공식..
 
-const foundNumberString = findNumberInArray(['js', 'number1'])
-
-console.log(foundNumberString) // ['number1']
-
-// 2. 배열 제곱
-// 기존 풀이방식
-console.log(map(x => x * x, [1,2,3,4,5]))
-
-const curriedMap = curry(map)
-const squareAll = curriedMap(x => x * x)
-console.log(squareAll([1,2,3,4,5])) // [1,4,9,16,25]
+x * (y * z) = (x * y) * z = xyz
 ```
 
-#### 데이터 플로우.. (partial 로 들어가기)
 ```js
-setTimeout(() => console.log('do task 1'), 10)
-setTimeout(() => console.log('do task 2'), 10)
+compose(f, compose(g,h)) == compose(compose(f,g), h)
+```
+이므로 앞의 composeN으로 적용한 함수들을 compose로 묶어서 처리시 이런 형태가 가능함    
+    
 
-const curriedTimeout = curry(setTimeout)
-// setTimeout을 curry로 감싸도 제대로 동작하지 않음
+#### 파이프라인 연산자
+```js
 
-curriedTimeout(() => {console.log('do task 1')})(10) // not work
-// 커리 함수는 가장 왼쪽에서 오른쪽의 리스트로 인자를 적용한다.
+const double = n => n * 2
+const increment = n => n + 1
+const ntimes = n => n * n
 
-const setTimeoutWrapper = (time, fn) => {
-    setTimeout(fn, time)
-}
+const result = ntimes(double(increment(double(double(5)))))
+console.log(result);
 
-const curriedTimeout = curry(setTimeoutWrapper)(10)
-// setTimeout을 wrapper함수로 감싸서 함수의 오른쪽이 우선이 되도록 하고
-// curry로 감싸면 해결됨
-
-curriedTimeout(() => console.log('do task 1')) // do task 1
+const result2 = 5 |> double |> double |> increment |> double |> ntimes
+console.log(result2)
+// 파이프라인 tc39 proposals 검토 확인하면 될듯
 ```
 
-#### 부분 함수 사용 (partial)
-```js
-const partial = (fn, ...partialArgs) => (...fullArguments) => {
-    let args = partialArgs.slice(0); // 수정된 부분.
-    let count = 0;
-    for (let i = 0; i < args.length && count < fullArguments.length; i++)
-        if (args[i] === undefined)
-            args[i] = fullArguments[count++];
-    return fn.apply(null, args)
-}
-
-const delayedTenMs = partial(setTimeout, undefined, 10)
-delayedTenMs(() => console.log('do task 1')) // do task 1
-
-// But, 버그가 있음
-delayedTenMs(() => console.log('do task 2')) // do task 1 ??? 2가 아닌 1이 출력
-// undefined 를 인자로 변환시키면서 partial 의 args가 변경됨..
-
-// partial 내부의 partialArgs를 복제해서 args를 다시 만들어줌.
-// 직접 array를 변경하지 못하도록 수정.
-```

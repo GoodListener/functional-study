@@ -1,59 +1,54 @@
-import {curry, filter, map, partial} from "../lib/es-functional";
+import {curry, filter, map, partial, compose, concatAll, composeN, pipe} from "../lib/es-functional";
+import {apressBooks} from "../data/apressBooks";
 
-const add = (x,y,z) => x + y + z
+let filterOutStandingBooks = (book) => book.rating[0] === 5
+let filterGoodBooks = book => book.rating[0] > 4.5;
+let filterBadBooks = book => book.rating[0] < 3.5;
 
-const addCurried = curry(add)
+let projectTitleAndAuthor = book => ({ title: book.title, author: book.author })
+let projectAuthor = book => ({ author: book.author })
+let projectTitle = book => ({ title: book.title })
 
-const multiple = (a,b,c) => a * b * c
+let queryGoodBooks = partial(filter, undefined, filterGoodBooks)
+let mapTitleAndAuthor = partial(map, undefined, projectTitleAndAuthor)
+let titleAndAuthorForGoodBooks = compose(mapTitleAndAuthor, queryGoodBooks)
 
-const multipleCurried = curry(multiple)
+const booksDetails = concatAll(
+    map(apressBooks, (book) => {
+      return book.bookDetails
+    })
+)
+console.log(titleAndAuthorForGoodBooks(booksDetails))
 
-const curriedMul1 = multipleCurried(1)
+/////
 
-// console.log(curriedMul1(2)(3))
+let splitIntoSpaces = str => str.split(' ');
+let count = array => array.length;
+const countWords = compose(count, splitIntoSpaces)
 
-const curriedFilter = curry(filter)
+console.log(countWords('hello world hi papa'))
 
-const isThree = curriedFilter(a => a === 3)
+let oddOrEven = ip => ip % 2 ? 'even' : 'odd'
 
-const result = isThree([1,2,3])
+const oddOrEvenWords = composeN(oddOrEven, count, splitIntoSpaces)
 
-// console.log(result)
-// console.log(isThree([1,2,3,4,3,5,2,3]))
+console.log(oddOrEvenWords('hello wordls hi papa gg'));
 
+/////
 
-let match = curry((expr, str) => str.match(expr))
-let hasNumber = match(/[0-9]+/)
+const oddOrEvenWords22 = pipe(splitIntoSpaces, count, oddOrEven)
 
-// console.log(hasNumber('number1'))
+console.log(oddOrEvenWords22('hello worlds hi papa gg dd'))
 
-const findNumberInArray = curriedFilter(hasNumber)
+/////
 
-const foundNumberString = findNumberInArray(['js', 'number1'])
+const double = n => n * 2
+const increment = n => n + 1
+const ntimes = n => n * n
 
-// console.log(foundNumberString)
+const result = ntimes(double(increment(double(double(5)))))
+console.log(result);
 
-const curriedMap = curry(map)
-
-const squareAll = curriedMap(x => x * x)
-
-// console.log(squareAll([1,2,3,4,5]))
-
-
-// const curriedTimeout = curry(setTimeout)
-//
-// curriedTimeout(() => {console.log('do task 1')})(10) // not work
-
-const setTimeoutWrapper = (time, fn) => {
-    setTimeout(fn, time)
-}
-
-const curriedTimeout = curry(setTimeoutWrapper)(10)
-
-curriedTimeout(() => console.log('do task 1')) // do task 1
-curriedTimeout(() => console.log('do task 2')) // do task 2
-
-const delayedTenMs = partial(setTimeout, undefined, 10)
-delayedTenMs(() => console.log('do task 1')) // do task 1
-
-delayedTenMs(() => console.log('do task 2')) // do task 2 ???? why 1?
+// const result2 = 5 |> double |> double |> increment |> double |> ntimes
+// console.log(result2)
+// 앞으로 가능해질거다.
