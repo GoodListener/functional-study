@@ -1,44 +1,29 @@
-## 함수자
+## 모나드
 
+문제를 해결하며 진행   
 
-#### 함수자는 컨테이너
+문제: 검색쿼리용 Reddit 댓글 가져오기
+
+1. 검색
+2. 검색 결과에서 children 에서 댓글 api link 가져오기
+3. 링크 URL을 통해 댓글 배열을 반환
+4. 타이틀과 댓글 배열을 결합
+
 ```js
-const Container = function(val) {
-  this.value = val;
+let searchReddit = (search) => {
+  let response
+  try {
+    response = JSON.parse(
+      request('GET', `https://www.reddit.com/search.json?q=${encodeURI(search)}`)
+        .getBody('utf8'))
+  } catch (err) {
+    response = { message: 'Something went wrong', errorCode: err['statusCode']}
+  }
+  return response
 }
-
-let testValue = new Container(3)
-console.log(testValue)
-
-const a = 3
-console.log(new Container(a))
-
-const obj = { test : 'blur' }
-console.log(new Container(obj))
-
-Container.of = function (value) {
-  return new Container(value);
-}
-
-testValue = Container.of('testValue')
-console.log(testValue)
-
-const goodContainer = Container.of(Container.of('good'))
-console.log(goodContainer)
-
-Container.prototype.map = function (fn) {
-  return Container.of(fn(this.value))
-}
-
-const addGoods = goodContainer
-  .map((goodContainer) => goodContainer.value + goodContainer.value)
-  .map((value) => value.split(''))
-console.log(addGoods)
 ```
 
-함수자(컨테이너)는 값을 감싸서 갖고있다.   
-
-#### 함수자를 통한 예외처리 ( null || undefined 처리 )
+MayBe 함수자로 감싸서 레딧 댓글을 가져와서 데이터를 다루기
 ```js
 const MayBe = function (val) {
   this.value = val;
@@ -56,103 +41,75 @@ MayBe.prototype.map = function (fn) {
   return this.isNothing() ? MayBe.of(null) : MayBe.of(fn(this.value))
 }
 
-import request from 'sync-request'
+MayBe.prototype.join = function() {
+  return this.isNothing() ? MayBe.of(null) : this.value
+}
 
-let getTopTenRedditPosts = (type) => {
+MayBe.prototype.chain = function(fn) {
+  return this.map(fn).join()
+}
+```
+
+```js
+let getComments = (link) => {
   let response
   try {
     response = JSON.parse(
-      request('GET', 
-        `https://www.reddit.com/r/subreddits/${type}.json?limit=10`)
-        .getBody('utf-8'))
+      request('GET', `https://www.reddit.com${link}`)
+        .getBody('utf8'))
   } catch (err) {
-    response = {
-      message: 'wrong',
-      errorCode: err['statusCode']
-    }
+    response = { message: 'Something went wrong', errorCode: err['statusCode'] }
   }
   return response
 }
-
-
-const posts = getTopTenRedditPosts('new')
-
-console.log(posts)
-
-let getTopTenSubRedditData = (type) => {
-  let response = getTopTenRedditPosts(type);
-  return MayBe.of(response).map(arr => arr['data'])
-    .map(arr => arr['children'])
-    .map(arr => arr.map(item => {
-      return {
-        title: item['data'].title,
-        url: item['data'].url
-      }
-    }))
-}
-
-const subRedditDatas = getTopTenSubRedditData('new') // handling exception
-console.log(subRedditDatas)
 ```
-
-#### Either을 통한 더 좋은 예외처리
+---
+MayBe로 감싸서 레딧 검색 결과 가져오기
 ```js
-const Nothing = function(val) {
-  this.value = val;
-}
-
-Nothing.of = function(val) {
-  return new Nothing(val);
-}
-
-Nothing.prototype.map = function(fn) {
-  return this
-}
-
-const Some = function(val) {
-  this.value = val;
-}
-
-Some.of = function(val) {
-  return new Some(val)
-}
-
-Some.prototype.map = function (fn) {
-  return Some.of(fn(this.value))
-}
-
-const Either = {
-  Some: Some,
-  Nothing: Nothing
-}
-
-let getTopTenSubRedditPostsEither = (type) => {
-  let response
-  try {
-    response = Some.of(
-      JSON.parse(
-      request('GET', 
-        `https://www.reddit.com/r/subreddits/${type}.json?limit=10`)
-        .getBody('utf-8')))
-  } catch (err) {
-    response = Nothing.of({ message: 'Something went wrong', errorCode: err['statusCode']})
-  }
-  return response
-}
-
-let getTopTenSubRedditDataEither = (type) => {
-  let response = getTopTenSubRedditPostsEither(type);
-  return response.map(arr => arr['data'])
+let mergeViaMayBe = (searchText) => {
+  let redditMayBe = MayBe.of(searchReddit(searchText))
+  let ans = redditMayBe
+    .map(arr => arr['data'])
     .map(arr => arr['children'])
     .map(arr => arr.map(item => {
       return {
         title: item.data.title,
-        url: item.data.url
+        permalink: item.data.permalink
       }
     }))
+  return ans
 }
-
-console.log(getTopTenSubRedditDataEither('new'))
 ```
-자바스크립트의 Promise의 구조와 거의 흡사함   
-Promise는 비동기 처리뿐만 아니라 컨테이너를 통해 예외처리를 간편하게 하기 위함
+---
+chain을 통해 가져온 결과를 연결
+```js
+const linkToJson = (link) => {
+  return link.substring(0, link.lastIndexOf('/')) + '.json';
+}
+// 책에 있는 예제로 가져오면 에러나서 소스 살짝 수정 ( 레딧 api 명세가 달라져서 발생하는 듯 )
+```
+결과 배열의 길이를 연결하여 length를 반환
+```js
+let mergeViaChain = (searchText) => {
+  let redditMayBe = MayBe.of(searchReddit(searchText))
+  let ans = redditMayBe.map(arr => arr['data'])
+    .map(arr => arr['children'])
+    .map(arr => arr.map(item => {
+      return {
+        title: item.data.title,
+        permalink: item.data.permalink
+      }
+    }))
+    .chain(obj => obj.map(item => {
+      return {
+        title: item.title,
+        comments: MayBe.of(getComments(linkToJson(item.permalink))).chain(item => {
+          return item.length
+        })
+      }
+    }))
+  return ans
+}
+```
+
+모나드란 ? : 체인을 갖고있는 함수자가 모나드다.
