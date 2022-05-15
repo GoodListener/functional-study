@@ -17,6 +17,8 @@
 8. 함수자
    [chap08](https://github.com/GoodListener/functional-study/tree/chap08)
 9. 모나드
+   [chap09](https://github.com/GoodListener/functional-study/tree/chap09)
 10. 제네레이터 문법
+   [chap10](https://github.com/GoodListener/functional-study/tree/chap10)
 11. 반응형 라이브러리 빌드
 12. 테스트 & 마무리
