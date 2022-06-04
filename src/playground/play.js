@@ -1,117 +1,99 @@
-import request from 'sync-request'
-
-const MayBe = function (val) {
-  this.value = val;
-}
-
-MayBe.of = function(val) {
-  return new MayBe(val)
-}
-
-MayBe.prototype.isNothing = function () {
-  return (this.value === null || this.value === undefined)
-}
-
-MayBe.prototype.map = function (fn) {
-  return this.isNothing() ? MayBe.of(null) : MayBe.of(fn(this.value))
-}
-
-// 추가
-MayBe.prototype.join = function() {
-  return this.isNothing() ? MayBe.of(null) : this.value
-}
-
-let searchReddit = (search) => {
-  let response
-  try {
-    response = JSON.parse(
-      request('GET', `https://www.reddit.com/search.json?q=${encodeURI(search)}`)
-        .getBody('utf8'))
-  } catch (err) {
-    response = { message: 'Something went wrong', errorCode: err['statusCode']}
-  }
-  return response
-}
-
-let getComments = (link) => {
-  let response
-  try {
-    response = JSON.parse(
-      request('GET', `https://www.reddit.com${link}`)
-        .getBody('utf8'))
-  } catch (err) {
-    response = { message: 'Something went wrong', errorCode: err['statusCode'] }
-  }
-  return response
-}
-
-let mergeViaMayBe = (searchText) => {
-  let redditMayBe = MayBe.of(searchReddit(searchText))
-  let ans = redditMayBe
-    .map(arr => arr['data'])
-    .map(arr => arr['children'])
-    .map(arr => arr.map(item => {
-      return {
-        title: item.data.title,
-        permalink: item.data.permalink
-      }
-    }))
-  return ans
-}
-
-const linkToJson = (link) => {
-  return link.substring(0, link.lastIndexOf('/')) + '.json';
-}
-
 /*
-const answer = mergeViaMayBe('functional programming2')
-  .map(obj =>
-    obj.map(item => {
-      return MayBe.of({
-        title: item.title,
-        comments: MayBe.of(
-          getComments(linkToJson(item.permalink))).join()
-      })
-})).join()
+const async1 = (callback) => {
+  setTimeout(() => {
+    callback('data');
+  }, 300)
+}
 
-const comments = answer.map(result => {
-  return result.map(mergeResult => {
-    return mergeResult.comments.map(comment => {
-      return { comment: comment }
+const async2 = (callback) => {
+  setTimeout(() => {
+    callback('data2');
+  }, 200)
+}
+
+const async3 = (callback) => {
+  setTimeout(() => {
+    callback('data3');
+  }, 100)
+}
+
+async1((data) => {
+  async2((data2) => {
+    async3((data3) => {
+      // console.log(data + data2 + data3);
     })
   })
 })
+
+// generator function
+
+function* gen() {
+  yield 'first gen'
+  yield 'second gen'
+  yield 'third gen'
+}
+
+let generatorResult = gen()
+
+console.log(generatorResult.next())
+console.log(generatorResult.next())
+
+let generatorSequence = gen()
+
+// 제네레이터 반복문
+for (let value of generatorSequence) {
+  console.log(value)
+}
+// first gen
+// second gen
+// third gen
+
+// 전개 가능
+let genResult = [...gen()]
+
+genResult.forEach(value => console.log(value))
+
+// 제네레이터에 데이터 전달.
+function* sayFullName() {
+  let firstName = yield;
+  let secondName = yield;
+  console.log(firstName + secondName)
+}
+
+let fullName = sayFullName()
+
+fullName.next()
+fullName.next('test')
+fullName.next('man')
 */
+// 비동기 구문
 
-MayBe.prototype.chain = function(fn) {
-  return this.map(fn).join()
+let generator;
+let getDataOne = () => {
+  setTimeout(() => {
+    generator.next('dummy data one')
+  }, 1000)
 }
 
-let mergeViaChain = (searchText) => {
-  let redditMayBe = MayBe.of(searchReddit(searchText))
-  let ans = redditMayBe.map(arr => arr['data'])
-    .map(arr => arr['children'])
-    .map(arr => arr.map(item => {
-      return {
-        title: item.data.title,
-        permalink: item.data.permalink
-      }
-    }))
-    .chain(obj => obj.map(item => {
-      return {
-        title: item.title,
-        comments: MayBe.of(getComments(linkToJson(item.permalink))).chain(item => {
-          return item.length
-        })
-      }
-    }))
-  return ans
+let getDataTwo = () => {
+  setTimeout(() => {
+    generator.next('dummy data two')
+  }, 1000)
 }
 
-const result = mergeViaChain('functional programming2')
 
-console.log(result);
+function* main() {
+  let dataOne = yield getDataOne();
+  let dataTwo = yield getDataTwo();
+  console.log('data one: ', dataOne);
+  console.log('data two: ', dataTwo);
+}
 
-const testMayBe = MayBe.of([1,2,3])
-const tResult = testMayBe.map(t => { t.push(4); return t}).chain(t => t.length)
-console.log(tResult)
+generator = main()
+
+generator.next()
+// async await 이랑 똑같다?
+
+// async await 이 더 진보된 방법이다? ??
+// 제네레이터만의 장점을 다 보여주진 못했음
+// 마플의 개발자 책을 보면 좋을듯
