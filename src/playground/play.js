@@ -1,9 +1,4 @@
-## 제네레이터를 통한 정지, 재개, 비동기
-
-왜 함수형 프로그래밍을 얘기할 때 제네레이터 문법이 언급이 될까?   
-
-#### 콜백 지옥
-```js
+/*
 const async1 = (callback) => {
   setTimeout(() => {
     callback('data');
@@ -25,14 +20,11 @@ const async3 = (callback) => {
 async1((data) => {
   async2((data2) => {
     async3((data3) => {
-      console.log(data + data2 + data3);
+      // console.log(data + data2 + data3);
     })
   })
 })
-```
 
-## 제네레이터
-```js
 // generator function
 
 function* gen() {
@@ -71,11 +63,11 @@ function* sayFullName() {
 let fullName = sayFullName()
 
 fullName.next()
-fullName.next('ec')
-fullName.next('kim')
-```
+fullName.next('test')
+fullName.next('man')
+*/
+// 비동기 구문
 
-```js
 let generator;
 let getDataOne = () => {
   setTimeout(() => {
@@ -100,6 +92,8 @@ function* main() {
 generator = main()
 
 generator.next()
-// async await 이랑 비슷.
-// generator 만의 장점이 있음.
-```
+// async await 이랑 똑같다?
+
+// async await 이 더 진보된 방법이다? ??
+// 제네레이터만의 장점을 다 보여주진 못했음
+// 마플의 개발자 책을 보면 좋을듯
